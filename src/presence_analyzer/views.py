@@ -38,7 +38,7 @@ def users_view():
 @jsonify
 def mean_time_weekday_view(user_id):
     """
-    Returns mean presence time of given user grouped by weekday.
+    Returns mean presence time of given user grouped by weekday(bar graph)
     """
     data = get_data()
     if user_id not in data:
@@ -58,7 +58,7 @@ def mean_time_weekday_view(user_id):
 @jsonify
 def presence_weekday_view(user_id):
     """
-    Returns total presence time of given user grouped by weekday.
+    Returns total presence time of given user grouped by weekday(circle graph)
     """
     data = get_data()
     if user_id not in data:
