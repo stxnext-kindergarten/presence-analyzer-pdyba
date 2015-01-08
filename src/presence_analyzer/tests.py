@@ -2,12 +2,13 @@
 """
 Presence analyzer unit tests.
 """
+import calendar
 import os.path
 import json
 import datetime
 import unittest
 
-from presence_analyzer import main, utils
+from presence_analyzer import main, utils, views  # do not remove for pylint
 
 
 TEST_DATA_CSV = os.path.join(
@@ -58,14 +59,58 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
-        self.assertLessEqual(len(data), 7, msg="Week has only 7 days")
+        user_ids = []
+        resp_2 = []
+        for entry in data:
+            user_ids.append(entry[u'user_id'])
+        for user_id in user_ids:
+            xresp = self.client.get('/api/v1/presence_weekday/' + str(user_id))
+            self.assertEqual(xresp.status_code, 200)
+            resp_2.append(xresp)
+        xdata = json.loads(resp_2[0].data)
+        self.assertEqual(len(xdata), 8, msg="Week has exactly 7 days")
+        self.assertEquals(
+            xdata,
+            [
+                ["Weekday", "Presence (s)"],
+                ["Mon", 0],
+                ["Tue", 30047],
+                ["Wed", 24465],
+                ["Thu", 23705],
+                ["Fri", 0],
+                ["Sat", 0],
+                ["Sun", 0],
+            ],
+        )
 
     def test_presence_weekday_view(self):
         resp = self.client.get('/api/v1/users')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
-        self.assertLessEqual(len(data), 7, msg="Week has only 7 days")
+        user_ids = []
+        resp_2 = []
+        for entry in data:
+            user_ids.append(entry[u'user_id'])
+        for user_id in user_ids:
+            xresp = self.client.get('/api/v1/presence_weekday/' + str(user_id))
+            self.assertEqual(xresp.status_code, 200)
+            resp_2.append(xresp)
+        xdata = json.loads(resp_2[0].data)
+        self.assertEqual(len(xdata), 8, msg="Week has exactly 7 days")
+        self.assertEquals(
+            xdata,
+            [
+                ["Weekday", "Presence (s)"],
+                ["Mon", 0],
+                ["Tue", 30047],
+                ["Wed", 24465],
+                ["Thu", 23705],
+                ["Fri", 0],
+                ["Sat", 0],
+                ["Sun", 0],
+            ],
+        )
 
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
@@ -101,16 +146,120 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         )
 
     def test_group_by_weekday(self):
-        pass
+        data = utils.get_data()
+        weekdays = data[10]
+        self.assertEquals(utils.group_by_weekday(weekdays),
+                          [[], [30047], [24465], [23705], [], [], []],
+                          msg="group by weekday error test case 1"
+                          )
+        weekdays_2 = data[11]
+        self.assertEquals(utils.group_by_weekday(weekdays_2),
+                          [[24123], [16564], [25321], [22969, 22999], [6426],
+                              [], []],
+                          msg="group by weekday error test case 2"
+                          )
 
     def test_seconds_since_midnight(self):
-        pass
+        good_times = [
+            [datetime.time(0, 1, 11), 71],
+            [datetime.time(11, 11, 11), 40271],
+            [datetime.time(23, 59, 59), 86399],
+            [datetime.time(17, 31, 51), 63111],
+            [datetime.time(6, 0, 59), 21659],
+        ]
+        for tim in good_times:
+            self.assertEquals(utils.seconds_since_midnight(tim[0]),
+                              tim[1])
+        # BAD times:
+        try:
+            self.assertEquals(datetime.time(25, 25, 25), 91525,
+                              msg='MidTime: 25h day')
+        except ValueError:
+            print "MidTime: All ok there is no 25h day keep on codding"
+        try:
+            self.assertEquals(datetime.time(-1, -25, -25), 91525,
+                              msg='MidTime: minus day')
+        except ValueError:
+            print "MidTime: All ok there is no minuses day keep on codding"
 
     def test_interval(self):
-        pass
+        # GOOD:
+        self.assertEquals(utils.interval(
+            datetime.time(9, 1, 23),
+            datetime.time(17, 1, 23)
+        ),
+            28800,
+            msg="interval err 1"
+        )
+        self.assertEquals(utils.interval(
+            datetime.time(0, 1, 1),
+            datetime.time(0, 11, 1)
+        ),
+            600,
+            msg="interval err 2"
+        )
+        self.assertEquals(utils.interval(
+            datetime.time(0, 0, 0),
+            datetime.time(23, 59, 59)
+        ),
+            86399,
+            msg="interval err 3"
+        )
+        self.assertEquals(utils.interval(
+            datetime.time(3, 0, 0),
+            datetime.time(1, 0, 0)
+        ),
+            -7200,
+            msg="interval err 4 wrong order start-end"
+        )
+        # BAD:
+        try:
+            self.assertEquals(utils.interval(
+                datetime.time(9, 1, 23),
+                datetime.time(25, 1, 23)
+            ),
+                57600,
+                msg='INT: 25h day'
+            )
+        except ValueError:
+            print "INTER: All ok there is no 25h day keep on codding"
+        try:
+            self.assertEquals(utils.interval(
+                datetime.time(-1, 1, 23),
+                datetime.time(1, 1, 23)
+            ),
+                7200,
+                msg='INT: minus day'
+            )
+        except ValueError:
+            print "INTER: All ok there is no minuses day keep on codding"
 
     def test_mean(self):
-        pass
+        data = utils.get_data()
+        weekdays = utils.group_by_weekday(data[10])
+        result = [
+            (calendar.day_abbr[weekday], utils.mean(intervals))
+            for weekday, intervals in enumerate(weekdays)
+        ]
+        self.assertEquals(result,
+                          [
+                              ('Mon', 0), ('Tue', 30047.0),
+                              ('Wed', 24465.0), ('Thu', 23705.0),
+                              ('Fri', 0), ('Sat', 0), ('Sun', 0)
+                          ],
+                          msg='Mean test error case 1'
+                          )
+        weekdays_2 = utils.group_by_weekday(data[11])
+        result_2 = [
+            (calendar.day_abbr[weekday], utils.mean(intervals))
+            for weekday, intervals in enumerate(weekdays_2)
+        ]
+        self.assertEquals(result_2,
+                          [('Mon', 24123.0), ('Tue', 16564.0),
+                           ('Wed', 25321.0), ('Thu', 22984.0),
+                           ('Fri', 6426.0), ('Sat', 0), ('Sun', 0)],
+                          msg='Mean test error'
+                          )
 
 
 def suite():
