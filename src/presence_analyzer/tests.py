@@ -7,7 +7,7 @@ import json
 import datetime
 import unittest
 
-from presence_analyzer import main, utils
+from presence_analyzer import main, views, utils
 
 
 TEST_DATA_CSV = os.path.join(
@@ -53,19 +53,17 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
 
-    def test_mean_time_weekday_view(self):
-        resp = self.client.get('/api/v1/users')
+    def test_presence_start_end_view(self):
+        resp = self.client.get('/api/v1/presence_start_end/10')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
-        self.assertLessEqual(len(data), 7, msg="Week has only 7 days")
+        print data
+        """
+        [[u'Mon', []], [u'Tue', [u'new Date[1, 1, 1, 9, 39, 5], new Date[1, 1, 1, 17, 59, 52]']], [u'Wed', [u'new Date[1, 1, 1, 9, 19, 52], new Date[1, 1, 1, 16, 7, 37]']], [u'Thu', [u'new Date[1, 1, 1, 10, 48, 46], new Date[1, 1, 1, 17, 23, 51]']], [u'Fri', []], [u'Sat', []], [u'Sun', []]]
+        """
 
-    def test_presence_weekday_view(self):
-        resp = self.client.get('/api/v1/users')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content_type, 'application/json')
-        data = json.loads(resp.data)
-        self.assertLessEqual(len(data), 7, msg="Week has only 7 days")
+
 
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
@@ -100,17 +98,9 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             datetime.time(9, 39, 5)
         )
 
-    def test_group_by_weekday(self):
-        pass
-
-    def test_seconds_since_midnight(self):
-        pass
-
-    def test_interval(self):
-        pass
-
-    def test_mean(self):
-        pass
+    def test_group_by_weekday_start_end(self):
+        data = utils.get_data()
+        result = utils.group_by_weekday_start_end(data[10])
 
 
 def suite():
