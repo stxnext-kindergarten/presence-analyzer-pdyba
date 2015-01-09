@@ -3,9 +3,9 @@
 Presence analyzer unit tests.
 """
 import calendar
-import os.path
-import json
 import datetime
+import json
+import os.path
 import unittest
 
 from presence_analyzer import main, utils, views  # do not remove for pylint
@@ -55,22 +55,12 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
 
     def test_mean_time_weekday_view(self):
-        resp = self.client.get('/api/v1/users')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content_type, 'application/json')
+        resp = self.client.get('/api/v1/presence_weekday/10')
         data = json.loads(resp.data)
-        user_ids = []
-        resp_2 = []
-        for entry in data:
-            user_ids.append(entry[u'user_id'])
-        for user_id in user_ids:
-            xresp = self.client.get('/api/v1/presence_weekday/' + str(user_id))
-            self.assertEqual(xresp.status_code, 200)
-            resp_2.append(xresp)
-        xdata = json.loads(resp_2[0].data)
-        self.assertEqual(len(xdata), 8, msg="Week has exactly 7 days")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(data), 8, msg="Week has exactly 7 days")
         self.assertEquals(
-            xdata,
+            data,
             [
                 ["Weekday", "Presence (s)"],
                 ["Mon", 0],
@@ -84,22 +74,12 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         )
 
     def test_presence_weekday_view(self):
-        resp = self.client.get('/api/v1/users')
+        resp = self.client.get('/api/v1/presence_weekday/10')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
-        user_ids = []
-        resp_2 = []
-        for entry in data:
-            user_ids.append(entry[u'user_id'])
-        for user_id in user_ids:
-            xresp = self.client.get('/api/v1/presence_weekday/' + str(user_id))
-            self.assertEqual(xresp.status_code, 200)
-            resp_2.append(xresp)
-        xdata = json.loads(resp_2[0].data)
-        self.assertEqual(len(xdata), 8, msg="Week has exactly 7 days")
+        self.assertEqual(len(data), 8, msg="Week has exactly 7 days")
         self.assertEquals(
-            xdata,
+            data,
             [
                 ["Weekday", "Presence (s)"],
                 ["Mon", 0],
@@ -149,13 +129,26 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         data = utils.get_data()
         weekdays = data[10]
         self.assertEquals(utils.group_by_weekday(weekdays),
-                          [[], [30047], [24465], [23705], [], [], []],
+                          [
+                              [],
+                              [30047],
+                              [24465],
+                              [23705],
+                              [],
+                              [],
+                              []],
                           msg="group by weekday error test case 1"
                           )
         weekdays_2 = data[11]
         self.assertEquals(utils.group_by_weekday(weekdays_2),
-                          [[24123], [16564], [25321], [22969, 22999], [6426],
-                              [], []],
+                          [
+                              [24123],
+                              [16564],
+                              [25321],
+                              [22969, 22999],
+                              [6426],
+                              [],
+                              []],
                           msg="group by weekday error test case 2"
                           )
 
@@ -171,16 +164,11 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             self.assertEquals(utils.seconds_since_midnight(tim[0]),
                               tim[1])
         # BAD times:
-        try:
+        with self.assertRaises(ValueError):
             self.assertEquals(datetime.time(25, 25, 25), 91525,
-                              msg='MidTime: 25h day')
-        except ValueError:
-            print "MidTime: All ok there is no 25h day keep on codding"
-        try:
+                              msg='MidTime: over 24h day time')
             self.assertEquals(datetime.time(-1, -25, -25), 91525,
-                              msg='MidTime: minus day')
-        except ValueError:
-            print "MidTime: All ok there is no minuses day keep on codding"
+                              msg='MidTime: minus day time')
 
     def test_interval(self):
         # GOOD:
@@ -213,7 +201,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             msg="interval err 4 wrong order start-end"
         )
         # BAD:
-        try:
+        with self.assertRaises(ValueError):
             self.assertEquals(utils.interval(
                 datetime.time(9, 1, 23),
                 datetime.time(25, 1, 23)
@@ -221,9 +209,6 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
                 57600,
                 msg='INT: 25h day'
             )
-        except ValueError:
-            print "INTER: All ok there is no 25h day keep on codding"
-        try:
             self.assertEquals(utils.interval(
                 datetime.time(-1, 1, 23),
                 datetime.time(1, 1, 23)
@@ -231,8 +216,6 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
                 7200,
                 msg='INT: minus day'
             )
-        except ValueError:
-            print "INTER: All ok there is no minuses day keep on codding"
 
     def test_mean(self):
         data = utils.get_data()
@@ -243,9 +226,13 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         ]
         self.assertEquals(result,
                           [
-                              ('Mon', 0), ('Tue', 30047.0),
-                              ('Wed', 24465.0), ('Thu', 23705.0),
-                              ('Fri', 0), ('Sat', 0), ('Sun', 0)
+                              ('Mon', 0),
+                              ('Tue', 30047.0),
+                              ('Wed', 24465.0),
+                              ('Thu', 23705.0),
+                              ('Fri', 0),
+                              ('Sat', 0),
+                              ('Sun', 0)
                           ],
                           msg='Mean test error case 1'
                           )
@@ -255,9 +242,15 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             for weekday, intervals in enumerate(weekdays_2)
         ]
         self.assertEquals(result_2,
-                          [('Mon', 24123.0), ('Tue', 16564.0),
-                           ('Wed', 25321.0), ('Thu', 22984.0),
-                           ('Fri', 6426.0), ('Sat', 0), ('Sun', 0)],
+                          [
+                              ('Mon', 24123.0),
+                              ('Tue', 16564.0),
+                              ('Wed', 25321.0),
+                              ('Thu', 22984.0),
+                              ('Fri', 6426.0),
+                              ('Sat', 0),
+                              ('Sun', 0)
+                          ],
                           msg='Mean test error'
                           )
 
