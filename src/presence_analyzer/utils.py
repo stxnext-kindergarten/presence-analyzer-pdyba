@@ -4,10 +4,11 @@ Helper functions used in views.
 """
 
 import csv
+from datetime import datetime
 from json import dumps
 from functools import wraps
-from datetime import datetime
 from itertools import chain
+
 
 from flask import Response
 
