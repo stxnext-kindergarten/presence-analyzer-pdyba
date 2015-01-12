@@ -58,12 +58,20 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
-        print data
-        """
-        [[u'Mon', []], [u'Tue', [u'new Date[1, 1, 1, 9, 39, 5], new Date[1, 1, 1, 17, 59, 52]']], [u'Wed', [u'new Date[1, 1, 1, 9, 19, 52], new Date[1, 1, 1, 16, 7, 37]']], [u'Thu', [u'new Date[1, 1, 1, 10, 48, 46], new Date[1, 1, 1, 17, 23, 51]']], [u'Fri', []], [u'Sat', []], [u'Sun', []]]
-        """
-
-
+        self.assertEquals(data,
+                          [
+                              [u'Mon', [1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]],
+                              [u'Tue', [1, 1, 1, 9, 39, 5],
+                               [1, 1, 1, 17, 59, 52]],
+                              [u'Wed', [1, 1, 1, 4, 9, 26],
+                               [1, 1, 1, 8, 3, 18]],
+                              [u'Thu', [1, 1, 1, 5, 24, 23],
+                               [1, 1, 1, 8, 11, 25]],
+                              [u'Fri', [1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]],
+                              [u'Sat', [1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]],
+                              [u'Sun', [1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]]
+                          ]
+                          )
 
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
@@ -101,6 +109,17 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     def test_group_by_weekday_start_end(self):
         data = utils.get_data()
         result = utils.group_by_weekday_start_end(data[10])
+        self.assertEquals(result,
+                          [
+                              [[[1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]]],
+                              [[[1, 1, 1, 9, 39, 5], [1, 1, 1, 17, 59, 52]]],
+                              [[[1, 1, 1, 4, 9, 26], [1, 1, 1, 8, 3, 18]]],
+                              [[[1, 1, 1, 5, 24, 23], [1, 1, 1, 8, 11, 25]]],
+                              [[[1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]]],
+                              [[[1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]]],
+                              [[[1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]]]
+                          ]
+                          )
 
 
 def suite():

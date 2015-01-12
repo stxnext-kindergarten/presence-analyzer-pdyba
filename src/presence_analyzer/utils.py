@@ -104,6 +104,7 @@ def mean(items):
     """
     return float(sum(items)) / len(items) if len(items) > 0 else 0
 
+
 def group_by_weekday_start_end(items):
     """
     Groups presence entries by weekday.
@@ -123,27 +124,21 @@ def group_by_weekday_start_end(items):
         for i in range(3):
             start_2.insert(0, 1)
             end_2.insert(0, 1)
-
         if len(result[date.weekday()]) == 0:
-            output = []
-            output.append(start_2)
-            output.append(end_2)
+            output = [start_2, end_2]
             result[date.weekday()].append(output)
         else:
             for i in range(6):
                 start_2[i] = (start_2[i] + (result[date.weekday()])[0][0][i])/2
                 end_2[i] = (end_2[i] + (result[date.weekday()])[0][1][i])/2
-            output = []
-            output.append(start_2)
-            output.append(end_2)
+            output = [start_2, end_2]
             result[date.weekday()].pop()
             result[date.weekday()].append(output)
+        for i in range(7):
+            if not result[i]:
+                result[i].append([[1, 1, 1, 0, 0, 0], [1, 1, 1, 0, 0, 0]])
     return result
+
 
 def flatten(listoflists):
     return list(chain.from_iterable(listoflists))
-
-blist = []
-alist = [['Thu', (1, 1, 1, 10, 48, 46), (1, 1, 1, 17, 23, 51)]]
-blist.append(alist[0])
-print blist
