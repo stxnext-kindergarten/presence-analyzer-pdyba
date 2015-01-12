@@ -8,15 +8,15 @@ import json
 import os.path
 import unittest
 
-from presence_analyzer import main, utils, views  # do not remove for pylint
+from presence_analyzer import main, utils, views
 
 
 TEST_DATA_CSV = os.path.join(
     os.path.dirname(__file__), '..', '..', 'runtime', 'data', 'test_data.csv'
 )
 
+# pylint: disable=maybe-no-member, too-many-public-methods, missing-docstring,
 
-# pylint: disable=maybe-no-member, too-many-public-methods
 class PresenceAnalyzerViewsTestCase(unittest.TestCase):
     """
     Views tests.
@@ -122,35 +122,39 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertItemsEqual(data[10][sample_date].keys(), ['start', 'end'])
         self.assertEqual(
             data[10][sample_date]['start'],
-            datetime.time(9, 39, 5)
-        )
+            datetime.time(9, 39, 5),
+            )
 
     def test_group_by_weekday(self):
         data = utils.get_data()
         weekdays = data[10]
-        self.assertEquals(utils.group_by_weekday(weekdays),
-                          [
-                              [],
-                              [30047],
-                              [24465],
-                              [23705],
-                              [],
-                              [],
-                              []],
-                          msg="group by weekday error test case 1"
-                          )
+        self.assertEquals(
+            utils.group_by_weekday(weekdays),
+            [
+                [],
+                [30047],
+                [24465],
+                [23705],
+                [],
+                [],
+                [],
+                ],
+            msg="group by weekday error test case 1",
+            )
         weekdays_2 = data[11]
-        self.assertEquals(utils.group_by_weekday(weekdays_2),
-                          [
-                              [24123],
-                              [16564],
-                              [25321],
-                              [22969, 22999],
-                              [6426],
-                              [],
-                              []],
-                          msg="group by weekday error test case 2"
-                          )
+        self.assertEquals(
+            utils.group_by_weekday(weekdays_2),
+            [
+                [24123],
+                [16564],
+                [25321],
+                [22969, 22999],
+                [6426],
+                [],
+                [],
+                ],
+            msg="group by weekday error test case 2",
+            )
 
     def test_seconds_since_midnight(self):
         good_times = [
@@ -159,7 +163,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             [datetime.time(23, 59, 59), 86399],
             [datetime.time(17, 31, 51), 63111],
             [datetime.time(6, 0, 59), 21659],
-        ]
+            ]
         for tim in good_times:
             self.assertEquals(utils.seconds_since_midnight(tim[0]),
                               tim[1])
@@ -172,50 +176,47 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
 
     def test_interval(self):
         # GOOD:
-        self.assertEquals(utils.interval(
-            datetime.time(9, 1, 23),
-            datetime.time(17, 1, 23)
-        ),
+        self.assertEquals(
+            utils.interval(
+                datetime.time(9, 1, 23),
+                datetime.time(17, 1, 23),
+            ),
             28800,
-            msg="interval err 1"
+            msg="interval err 1",
         )
-        self.assertEquals(utils.interval(
-            datetime.time(0, 1, 1),
-            datetime.time(0, 11, 1)
-        ),
+        self.assertEquals(
+            utils.interval(
+                datetime.time(0, 1, 1),
+                datetime.time(0, 11, 1),
+            ),
             600,
-            msg="interval err 2"
+            msg="interval err 2",
         )
-        self.assertEquals(utils.interval(
-            datetime.time(0, 0, 0),
-            datetime.time(23, 59, 59)
-        ),
+        self.assertEquals(
+            utils.interval(
+                datetime.time(0, 0, 0),
+                datetime.time(23, 59, 59),
+            ),
             86399,
-            msg="interval err 3"
-        )
-        self.assertEquals(utils.interval(
-            datetime.time(3, 0, 0),
-            datetime.time(1, 0, 0)
-        ),
-            -7200,
-            msg="interval err 4 wrong order start-end"
+            msg="interval err 3",
         )
         # BAD:
-        with self.assertRaises(ValueError):
-            self.assertEquals(utils.interval(
-                datetime.time(9, 1, 23),
-                datetime.time(25, 1, 23)
+        self.assertEquals(
+            utils.interval(
+                datetime.time(3, 0, 0),
+                datetime.time(1, 0, 0),
+                ),
+            -7200,
+            msg="interval err 4 wrong order start-end",
+        )
+        self.assertEquals(
+            utils.interval(
+                datetime.time(1, 0, 0),
+                datetime.time(3, 0, 0),
             ),
-                57600,
-                msg='INT: 25h day'
-            )
-            self.assertEquals(utils.interval(
-                datetime.time(-1, 1, 23),
-                datetime.time(1, 1, 23)
-            ),
-                7200,
-                msg='INT: minus day'
-            )
+            7200,
+            msg="interval err 4 wrong order start-end",
+        )
 
     def test_mean(self):
         data = utils.get_data()
@@ -224,35 +225,37 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             (calendar.day_abbr[weekday], utils.mean(intervals))
             for weekday, intervals in enumerate(weekdays)
         ]
-        self.assertEquals(result,
-                          [
-                              ('Mon', 0),
-                              ('Tue', 30047.0),
-                              ('Wed', 24465.0),
-                              ('Thu', 23705.0),
-                              ('Fri', 0),
-                              ('Sat', 0),
-                              ('Sun', 0)
-                          ],
-                          msg='Mean test error case 1'
-                          )
+        self.assertEquals(
+            result,
+            [
+                ('Mon', 0),
+                ('Tue', 30047.0),
+                ('Wed', 24465.0),
+                ('Thu', 23705.0),
+                ('Fri', 0),
+                ('Sat', 0),
+                ('Sun', 0),
+                ],
+            msg='Mean test error case 1'
+            )
         weekdays_2 = utils.group_by_weekday(data[11])
         result_2 = [
             (calendar.day_abbr[weekday], utils.mean(intervals))
             for weekday, intervals in enumerate(weekdays_2)
         ]
-        self.assertEquals(result_2,
-                          [
-                              ('Mon', 24123.0),
-                              ('Tue', 16564.0),
-                              ('Wed', 25321.0),
-                              ('Thu', 22984.0),
-                              ('Fri', 6426.0),
-                              ('Sat', 0),
-                              ('Sun', 0)
-                          ],
-                          msg='Mean test error'
-                          )
+        self.assertEquals(
+            result_2,
+            [
+                ('Mon', 24123.0),
+                ('Tue', 16564.0),
+                ('Wed', 25321.0),
+                ('Thu', 22984.0),
+                ('Fri', 6426.0),
+                ('Sat', 0),
+                ('Sun', 0),
+                ],
+            msg='Mean test error',
+            )
 
 
 def suite():
