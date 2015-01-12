@@ -2,6 +2,8 @@
 """
 Presence analyzer unit tests.
 """
+# pylint: disable=maybe-no-member, too-many-public-methods, missing-docstring,
+# pylint: disable=unused-import
 import os.path
 import json
 import datetime
@@ -15,7 +17,6 @@ TEST_DATA_CSV = os.path.join(
 )
 
 
-# pylint: disable=maybe-no-member, too-many-public-methods
 class PresenceAnalyzerViewsTestCase(unittest.TestCase):
     """
     Views tests.
@@ -53,6 +54,25 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(len(data), 2)
         self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
 
+    def test_presence_start_end_view(self):
+        resp = self.client.get('/api/v1/presence_start_end/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        print data
+        self.assertEquals(
+            data,
+            [
+                [u'Mon', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                [u'Tue', [1, 1, 1, 9, 39, 5], [1, 1, 1, 17, 59, 52]],
+                [u'Wed', [1, 1, 1, 9, 19, 52], [1, 1, 1, 16, 7, 37]],
+                [u'Thu', [1, 1, 1, 10, 48, 46], [1, 1, 1, 17, 23, 51]],
+                [u'Fri', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                [u'Sat', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                [u'Sun', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                ],
+        )
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
@@ -84,6 +104,22 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(
             data[10][sample_date]['start'],
             datetime.time(9, 39, 5)
+        )
+
+    def test_group_by_weekday_start_end(self):
+        data = utils.get_data()
+        result = utils.group_by_weekday_start_end(data[10])
+        self.assertEquals(
+            result,
+            {
+                0: [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                1: [[1, 1, 1, 9, 39, 5], [1, 1, 1, 17, 59, 52]],
+                2: [[1, 1, 1, 9, 19, 52], [1, 1, 1, 16, 7, 37]],
+                3: [[1, 1, 1, 10, 48, 46], [1, 1, 1, 17, 23, 51]],
+                4: [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                5: [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                6: [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                }
         )
 
 

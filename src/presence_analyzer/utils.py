@@ -7,19 +7,23 @@ import csv
 from json import dumps
 from functools import wraps
 from datetime import datetime
+from itertools import chain
 
 from flask import Response
 
 from presence_analyzer.main import app
 
 import logging
-log = logging.getLogger(__name__)  # pylint: disable=invalid-name
+
+log = logging.getLogger(__name__)
+# pylint: disable=invalid-name, missing-docstring
 
 
 def jsonify(function):
     """
     Creates a response with the JSON representation of wrapped function result.
     """
+
     @wraps(function)
     def inner(*args, **kwargs):
         """
@@ -29,6 +33,7 @@ def jsonify(function):
             dumps(function(*args, **kwargs)),
             mimetype='application/json'
         )
+
     return inner
 
 
@@ -102,3 +107,26 @@ def mean(items):
     Calculates arithmetic mean. Returns zero for empty lists.
     """
     return float(sum(items)) / len(items) if len(items) > 0 else 0
+
+
+def group_by_weekday_start_end(items):
+    """
+    Groups presence entries by weekday.
+    """
+    result = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+    for date in items:
+        start = str(items[date]['start']).split(':')
+        end = str(items[date]['end']).split(':')
+        start_2 = [1, 1, 1, int(start[0]), int(start[1]), int(start[2])]
+        end_2 = [1, 1, 1, int(end[0]), int(end[1]), int(end[2])]
+        if not result[date.weekday()]:
+            result[date.weekday()] = [start_2, end_2]
+        else:
+            for i in range(5):
+                start_2[i] = (start_2[i] + (result[date.weekday()])[0][i]) / 2
+                end_2[i] = (end_2[i] + (result[date.weekday()])[1][i]) / 2
+            result[date.weekday()] = [start_2, end_2]
+    for day in result:
+        if not result[day]:
+            result[day] = [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]]
+    return result
