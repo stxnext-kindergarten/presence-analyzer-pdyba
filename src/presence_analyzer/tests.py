@@ -91,6 +91,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
                 [u'Sat', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
                 [u'Sun', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
                 ],
+        )
         self.assertEqual(len(data), 8, msg="Week has exactly 7 days")
         self.assertEquals(
             data,
