@@ -19,6 +19,7 @@ TEST_DATA_CSV = os.path.join(
 
 # pylint: disable=maybe-no-member, too-many-public-methods, missing-docstring,
 
+
 class PresenceAnalyzerViewsTestCase(unittest.TestCase):
     """
     Views tests.
@@ -74,24 +75,6 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
                 ["Sun", 0],
             ],
         )
-
-    def test_presence_start_end_view(self):
-        resp = self.client.get('/api/v1/presence_start_end/10')
-        self.assertEqual(resp.status_code, 200)
-        data = json.loads(resp.data)
-        print data
-        self.assertEquals(
-            data,
-            [
-                [u'Mon', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
-                [u'Tue', [1, 1, 1, 9, 39, 5], [1, 1, 1, 17, 59, 52]],
-                [u'Wed', [1, 1, 1, 9, 19, 52], [1, 1, 1, 16, 7, 37]],
-                [u'Thu', [1, 1, 1, 10, 48, 46], [1, 1, 1, 17, 23, 51]],
-                [u'Fri', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
-                [u'Sat', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
-                [u'Sun', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
-                ],
-        )
         self.assertEqual(len(data), 8, msg="Week has exactly 7 days")
         self.assertEquals(
             data,
@@ -105,6 +88,23 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
                 ["Sat", 0],
                 ["Sun", 0],
             ],
+        )
+
+    def test_presence_start_end_view(self):
+        resp = self.client.get('/api/v1/presence_start_end/10')
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertEquals(
+            data,
+            [
+                [u'Mon', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                [u'Tue', [1, 1, 1, 9, 39, 5], [1, 1, 1, 17, 59, 52]],
+                [u'Wed', [1, 1, 1, 9, 19, 52], [1, 1, 1, 16, 7, 37]],
+                [u'Thu', [1, 1, 1, 10, 48, 46], [1, 1, 1, 17, 23, 51]],
+                [u'Fri', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                [u'Sat', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                [u'Sun', [1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]],
+                ],
         )
 
 
