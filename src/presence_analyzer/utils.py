@@ -2,13 +2,15 @@
 """
 Helper functions used in views.
 """
-
+import urllib
 import csv
+
 from datetime import datetime
 from json import dumps
 from functools import wraps
 from itertools import chain
 
+from lxml import etree
 
 from flask import Response
 
@@ -131,3 +133,15 @@ def group_by_weekday_start_end(items):
         if not result[day]:
             result[day] = [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]]
     return result
+
+
+def user(uid):
+    users = {}
+    xml = urllib.urlopen('http://sargo.bolt.stxnext.pl/users.xml')
+    tree = etree.parse(xml)
+    root = tree.getroot()
+    server = root.find('server')
+    server_url = server.find('protocol').text + "://" + server.find('host').text
+    for user in root.find('users'):
+         users[int(user.get('id'))] = {'name': user.find('name').text,'image_url': server_url + user.find('avatar').text}
+    return users[uid]
