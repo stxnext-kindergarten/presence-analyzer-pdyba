@@ -2,16 +2,19 @@
 """
 Helper functions used in views.
 """
-import urllib
-import csv
 
-from datetime import datetime
+import csv
+from threading import Lock
+import urllib
+
+
+from datetime import datetime, timedelta
 from json import dumps
 from functools import wraps
 
-from lxml import etree
-
 from flask import Response
+
+from lxml import etree
 
 from presence_analyzer.main import app
 
@@ -19,6 +22,8 @@ import logging
 
 log = logging.getLogger(__name__)
 # pylint: disable=invalid-name, missing-docstring
+
+CACHE = {}
 
 
 def jsonify(function):
@@ -39,6 +44,26 @@ def jsonify(function):
     return inner
 
 
+def cached(exp_time):
+
+    cache_lock = Lock()
+
+    def inner(function):
+        @wraps(function)
+        def inner(*args, **kwargs):
+            with cache_lock:
+                age = datetime.now() - timedelta(seconds=exp_time)
+                if CACHE and CACHE['timestamp'] >= age:
+                    CACHE['timestamp'] = datetime.now()
+                else:
+                    CACHE['timestamp'] = datetime.now()
+                    CACHE[args] = function(*args, **kwargs)
+                return CACHE[args]
+        return inner
+    return inner
+
+
+@cached(600)
 def get_data():
     """
     Extracts presence data from CSV file and groups it by user_id.
@@ -165,10 +190,11 @@ def user(uid, data=False, name=True, image_url=True):
     except KeyError:
         if name and image_url:
             return {'name': "Anonymous user",
-                'image_url': 'http://www.designofsignage.com/application/'
-                             'symbol/building/image/600x600/no-photo.jpg'}
+                    'image_url': 'http://www.designofsignage.com/application/'
+                                 'symbol/building/image/600x600/no-photo.jpg'}
         elif not name and image_url:
             return {'image_url': 'http://www.designofsignage.com/'
-                                 'application/symbol/building/image/600x600/no-photo.jpg'}
+                                 'application/symbol/building/'
+                                 'image/600x600/no-photo.jpg'}
         else:
             return "Anonymous user"
