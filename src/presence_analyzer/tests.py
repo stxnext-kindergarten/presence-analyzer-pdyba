@@ -55,7 +55,7 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
         self.assertEqual(len(data), 2)
-        self.assertDictEqual(data[0], {u'user_id': 10, u'name': u'User 10'})
+        self.assertDictEqual(data[0], {u'name': u'Maciej Z.', u'user_id': 10})
 
     def test_mean_time_weekday_view(self):
         resp = self.client.get('/api/v1/presence_weekday/10')
@@ -107,6 +107,14 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
                 ],
         )
 
+    def test_user_view(self):
+        resp = self.client.get('/api/v1/user/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        self.assertEquals(data,
+                          {u'image_url': u'https://intranet.stxnext.pl/api/images/users/10',
+                           u'name': u'Maciej Z.'})
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
@@ -287,6 +295,32 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
                 ],
             msg='Mean test error',
             )
+    def test_user(self):
+        path = os.path.join(
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.dirname(__file__)
+                )
+            ),
+            'runtime/data/test_users.xml',
+        )
+        print path
+        self.assertEquals(utils.user(10, path),
+                          {"image_url": "https://intranet.stxnext.pl/api/images/users/10",
+                           "name": "Adam P."}
+        )
+        self.assertEquals(utils.user(12, path),
+                          {"image_url": "https://intranet.stxnext.pl/api/images/users/12",
+                           "name": "Adrian K."}
+        )
+        self.assertEquals(utils.user(11, path),
+        {"image_url": "http://www.designofsignage.com/application/symbol/building/image/600x600/no-photo.jpg",
+         "name": "Anonymous user"}
+        )
+        self.assertEquals(utils.user(999, path),
+        {"image_url": "http://www.designofsignage.com/application/symbol/building/image/600x600/no-photo.jpg",
+         "name": "Anonymous user"}
+        )
 
 
 def suite():

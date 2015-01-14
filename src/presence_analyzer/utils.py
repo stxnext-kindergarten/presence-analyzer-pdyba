@@ -133,9 +133,16 @@ def group_by_weekday_start_end(items):
             result[day] = [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]]
     return result
 
-def user(uid, name=True, image_url=True):
+def user(uid, data=False, name=True, image_url=True, ):
     users = {}
-    xml = urllib.urlopen('http://sargo.bolt.stxnext.pl/users.xml')
+    if not data:
+        xml = urllib.urlopen('http://sargo.bolt.stxnext.pl/users.xml')
+    else:
+        try:
+            xml = open(data)
+        except KeyError:
+            xml = urllib.urlopen(data)
+
     tree = etree.parse(xml)
     root = tree.getroot()
     server = root.find('server')
@@ -154,4 +161,4 @@ def user(uid, name=True, image_url=True):
         else:
             return users[uid]['name']
     except KeyError:
-        return "Anonymus user"
+        return {'name':"Anonymous user", 'image_url':'http://www.designofsignage.com/application/symbol/building/image/600x600/no-photo.jpg'}
