@@ -2,25 +2,50 @@
 """
 Defines views.
 """
+# pylint: disable=invalid-name
 
 import calendar
 
-from flask import redirect, abort
+from flask import redirect, abort, render_template, url_for
 
 from presence_analyzer.main import app
 from presence_analyzer.utils import jsonify, get_data, mean, group_by_weekday, \
-    group_by_weekday_start_end
+    group_by_weekday_start_end, user
 
 import logging
-log = logging.getLogger(__name__)  # pylint: disable=invalid-name
+log = logging.getLogger(__name__)
 
 
 @app.route('/')
 def mainpage():
     """
-    Redirects to front page.
+    Renders mainpage
     """
-    return redirect('/static/presence_weekday.html')
+    return redirect(url_for('presence_weekday_way'))
+
+
+@app.route('/presence_weekday.html')
+def presence_weekday_way():
+    """
+    Renders mainpage
+    """
+    return render_template('presence_weekday.html')
+
+
+@app.route('/mean_time_weekday.html')
+def mean_time_weekday_way():
+    """
+    Renders mainpage
+    """
+    return render_template('mean_time_weekday.html')
+
+
+@app.route('/presence_start_end.html')
+def presence_start_end_way():
+    """
+    Renders mainpage
+    """
+    return render_template('presence_start_end.html')
 
 
 @app.route('/api/v1/users', methods=['GET'])
@@ -31,11 +56,25 @@ def users_view():
     """
     data = get_data()
     return [
-        {'user_id': i, 'name': 'User {0}'.format(str(i))}
+        {'user_id': i, 'name': user(i, name=True, image_url=False)}
         for i in data.keys()
     ]
 
 
+@app.route('/api/v1/user/<int:user_id>', methods=['GET'])
+@jsonify
+def user_view(user_id):
+    """
+    Users details.
+    """
+    data = get_data()
+    if user_id not in data:
+        log.debug('User %s not found!', user_id)
+        abort(404)
+    return user(user_id)
+
+
+@app.route('/api/v1/mean_time_weekday/', methods=['GET'])
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])
 @jsonify
 def mean_time_weekday_view(user_id):
@@ -56,6 +95,7 @@ def mean_time_weekday_view(user_id):
     return result
 
 
+@app.route('/api/v1/presence_weekday/', methods=['GET'])
 @app.route('/api/v1/presence_weekday/<int:user_id>', methods=['GET'])
 @jsonify
 def presence_weekday_view(user_id):
@@ -76,6 +116,7 @@ def presence_weekday_view(user_id):
     return result
 
 
+@app.route('/api/v1/presence_start_end/', methods=['GET'])
 @app.route('/api/v1/presence_start_end/<int:user_id>', methods=['GET'])
 @jsonify
 def presence_start_end_view(user_id):

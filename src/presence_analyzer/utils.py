@@ -2,13 +2,14 @@
 """
 Helper functions used in views.
 """
-
+import urllib
 import csv
+
 from datetime import datetime
 from json import dumps
 from functools import wraps
-from itertools import chain
 
+from lxml import etree
 
 from flask import Response
 
@@ -131,3 +132,43 @@ def group_by_weekday_start_end(items):
         if not result[day]:
             result[day] = [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]]
     return result
+
+
+def user(uid, data=False, name=True, image_url=True):
+    users = {}
+    if not data:
+        xml = urllib.urlopen('http://sargo.bolt.stxnext.pl/users.xml')
+    else:
+        try:
+            xml = open(data)
+        except KeyError:
+            xml = urllib.urlopen(data)
+
+    tree = etree.parse(xml)
+    root = tree.getroot()
+    server = root.find('server')
+    server_url = server.find('protocol').text + "://" \
+        + server.find('host').text
+    for user in root.find('users'):
+        users[int(user.get('id'))] = \
+            {
+                'name': user.find('name').text,
+                'image_url': server_url + user.find('avatar').text,
+                }
+    try:
+        if name and image_url:
+            return users[uid]
+        elif not name and image_url:
+            return users[uid]['image_url']
+        else:
+            return users[uid]['name']
+    except KeyError:
+        if name and image_url:
+            return {'name': "Anonymous user",
+                'image_url': 'http://www.designofsignage.com/application/'
+                             'symbol/building/image/600x600/no-photo.jpg'}
+        elif not name and image_url:
+            return {'image_url': 'http://www.designofsignage.com/'
+                                 'application/symbol/building/image/600x600/no-photo.jpg'}
+        else:
+            return "Anonymous user"
