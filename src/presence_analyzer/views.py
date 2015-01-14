@@ -60,6 +60,7 @@ def users_view():
         for i in data.keys()
     ]
 
+
 @app.route('/api/v1/user/<int:user_id>', methods=['GET'])
 @jsonify
 def user_view(user_id):

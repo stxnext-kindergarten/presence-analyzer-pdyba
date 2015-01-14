@@ -133,6 +133,7 @@ def group_by_weekday_start_end(items):
             result[day] = [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]]
     return result
 
+
 def user(uid, data=False, name=True, image_url=True, ):
     users = {}
     if not data:
@@ -146,7 +147,8 @@ def user(uid, data=False, name=True, image_url=True, ):
     tree = etree.parse(xml)
     root = tree.getroot()
     server = root.find('server')
-    server_url = server.find('protocol').text + "://" + server.find('host').text
+    server_url = server.find('protocol').text + "://" \
+        + server.find('host').text
     for user in root.find('users'):
         users[int(user.get('id'))] = \
             {
@@ -161,4 +163,6 @@ def user(uid, data=False, name=True, image_url=True, ):
         else:
             return users[uid]['name']
     except KeyError:
-        return {'name':"Anonymous user", 'image_url':'http://www.designofsignage.com/application/symbol/building/image/600x600/no-photo.jpg'}
+        return {'name': "Anonymous user",
+                'image_url': 'http://www.designofsignage.com/application/'
+                'symbol/building/image/600x600/no-photo.jpg'}

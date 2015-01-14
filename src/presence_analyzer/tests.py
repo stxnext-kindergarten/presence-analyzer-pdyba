@@ -112,9 +112,12 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content_type, 'application/json')
         data = json.loads(resp.data)
-        self.assertEquals(data,
-                          {u'image_url': u'https://intranet.stxnext.pl/api/images/users/10',
-                           u'name': u'Maciej Z.'})
+        self.assertEquals(
+            data,
+            {u'image_url': u'https://intranet.stxnext.pl/api/images/users/10',
+             u'name': u'Maciej Z.'}
+        )
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
@@ -295,6 +298,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
                 ],
             msg='Mean test error',
             )
+
     def test_user(self):
         path = os.path.join(
             os.path.dirname(
@@ -305,21 +309,27 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
             'runtime/data/test_users.xml',
         )
         print path
-        self.assertEquals(utils.user(10, path),
-                          {"image_url": "https://intranet.stxnext.pl/api/images/users/10",
-                           "name": "Adam P."}
+        self.assertEquals(
+            utils.user(10, path),
+            {"image_url": "https://intranet.stxnext.pl/api/images/users/10",
+             "name": "Adam P."}
         )
-        self.assertEquals(utils.user(12, path),
-                          {"image_url": "https://intranet.stxnext.pl/api/images/users/12",
-                           "name": "Adrian K."}
+        self.assertEquals(
+            utils.user(12, path),
+            {"image_url": "https://intranet.stxnext.pl/api/images/users/12",
+             "name": "Adrian K."}
         )
-        self.assertEquals(utils.user(11, path),
-        {"image_url": "http://www.designofsignage.com/application/symbol/building/image/600x600/no-photo.jpg",
-         "name": "Anonymous user"}
+        self.assertEquals(
+            utils.user(11, path),
+            {"image_url": "http://www.designofsignage.com/application/symbol/"
+                          "building/image/600x600/no-photo.jpg",
+             "name": "Anonymous user"}
         )
-        self.assertEquals(utils.user(999, path),
-        {"image_url": "http://www.designofsignage.com/application/symbol/building/image/600x600/no-photo.jpg",
-         "name": "Anonymous user"}
+        self.assertEquals(
+            utils.user(999, path),
+            {"image_url": "http://www.designofsignage.com/application/symbol/"
+                          "building/image/600x600/no-photo.jpg",
+             "name": "Anonymous user"}
         )
 
 
