@@ -133,8 +133,7 @@ def group_by_weekday_start_end(items):
             result[day] = [[1, 1, 1, 12, 0, 0], [1, 1, 1, 12, 0, 0]]
     return result
 
-
-def user(uid):
+def user(uid, name=True, image_url=True):
     users = {}
     xml = urllib.urlopen('http://sargo.bolt.stxnext.pl/users.xml')
     tree = etree.parse(xml)
@@ -142,5 +141,17 @@ def user(uid):
     server = root.find('server')
     server_url = server.find('protocol').text + "://" + server.find('host').text
     for user in root.find('users'):
-         users[int(user.get('id'))] = {'name': user.find('name').text,'image_url': server_url + user.find('avatar').text}
-    return users[uid]
+        users[int(user.get('id'))] = \
+            {
+                'name': user.find('name').text,
+                'image_url': server_url + user.find('avatar').text,
+                }
+    try:
+        if name and image_url:
+            return users[uid]
+        elif not name and image_url:
+            return users[uid]['image_url']
+        else:
+            return users[uid]['name']
+    except KeyError:
+        return "Anonymus user"

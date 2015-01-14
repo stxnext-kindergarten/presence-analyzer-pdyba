@@ -39,7 +39,6 @@ function parseInterval(value) {
                             
                             chart_div.show();
                             loading.hide();
-                            debugger;
                             var chart = new google.visualization.ColumnChart(chart_div[0]);
                             chart.draw(data, options);
                         });

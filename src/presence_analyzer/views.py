@@ -10,7 +10,7 @@ from flask import redirect, abort, render_template, url_for
 
 from presence_analyzer.main import app
 from presence_analyzer.utils import jsonify, get_data, mean, group_by_weekday, \
-    group_by_weekday_start_end
+    group_by_weekday_start_end, user
 
 import logging
 log = logging.getLogger(__name__)
@@ -56,9 +56,21 @@ def users_view():
     """
     data = get_data()
     return [
-        {'user_id': i, 'name': 'User {0}'.format(str(i))}
+        {'user_id': i, 'name': user(i, image_url=False)}
         for i in data.keys()
     ]
+
+@app.route('/api/v1/user/<int:user_id>', methods=['GET'])
+@jsonify
+def user_view(user_id):
+    """
+    Users details.
+    """
+    data = get_data()
+    if user_id not in data:
+        log.debug('User %s not found!', user_id)
+        abort(404)
+    return user(user_id)
 
 
 @app.route('/api/v1/mean_time_weekday/', methods=['GET'])

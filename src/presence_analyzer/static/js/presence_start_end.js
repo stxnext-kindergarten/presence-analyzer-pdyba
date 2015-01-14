@@ -1,3 +1,5 @@
+google.load("visualization", "1", {packages:["timeline"]});
+
 (function($) {
             $(document).ready(function(){
                 var loading = $('#loading');
@@ -41,7 +43,6 @@
 
                         chart_div.show();
                         loading.hide();
-                            debugger;
                         var chart = new google.visualization.Timeline(chart_div[0]);
                         chart.draw(data, options);
                         });

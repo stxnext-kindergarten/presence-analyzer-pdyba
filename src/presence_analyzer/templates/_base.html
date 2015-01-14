@@ -37,11 +37,14 @@
             </ul>
         </div>
         <div id="content">
-            <h2>Presence mean time by weekday</h2> <!-- TO DO -->
+            <h2>{% block title %} {% endblock %}</h2> <!-- TO DO -->
             <p>
                 <select id="user_id" style="display: none">
                     <option value="">--</option>
                 </select>
+             <div id="user_detail">
+            <script src="{{ url_for('static', filename='js/user_detail_view.js') }}"></script>
+                </div>
                 <div id="chart_div" style="display: none">
                 </div>
                 <div id="loading">
