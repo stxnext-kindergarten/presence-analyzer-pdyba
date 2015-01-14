@@ -134,7 +134,7 @@ def group_by_weekday_start_end(items):
     return result
 
 
-def user(uid, data=False, name=True, image_url=True, ):
+def user(uid, data=False, name=True, image_url=True):
     users = {}
     if not data:
         xml = urllib.urlopen('http://sargo.bolt.stxnext.pl/users.xml')
@@ -163,6 +163,12 @@ def user(uid, data=False, name=True, image_url=True, ):
         else:
             return users[uid]['name']
     except KeyError:
-        return {'name': "Anonymous user",
+        if name and image_url:
+            return {'name': "Anonymous user",
                 'image_url': 'http://www.designofsignage.com/application/'
-                'symbol/building/image/600x600/no-photo.jpg'}
+                             'symbol/building/image/600x600/no-photo.jpg'}
+        elif not name and image_url:
+            return {'image_url': 'http://www.designofsignage.com/'
+                                 'application/symbol/building/image/600x600/no-photo.jpg'}
+        else:
+            return "Anonymous user"

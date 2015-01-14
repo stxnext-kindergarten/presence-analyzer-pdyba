@@ -56,7 +56,7 @@ def users_view():
     """
     data = get_data()
     return [
-        {'user_id': i, 'name': user(i, image_url=False)}
+        {'user_id': i, 'name': user(i, name=True, image_url=False)}
         for i in data.keys()
     ]
 

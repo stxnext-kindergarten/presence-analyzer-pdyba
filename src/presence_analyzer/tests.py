@@ -301,14 +301,9 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
 
     def test_user(self):
         path = os.path.join(
-            os.path.dirname(
-                os.path.dirname(
-                    os.path.dirname(__file__)
-                )
-            ),
-            'runtime/data/test_users.xml',
+            os.path.dirname(__file__),
+            '../../runtime/data/test_users.xml',
         )
-        print path
         self.assertEquals(
             utils.user(10, path),
             {"image_url": "https://intranet.stxnext.pl/api/images/users/10",
