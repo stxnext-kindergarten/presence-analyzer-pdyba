@@ -8,7 +8,6 @@ import csv
 from datetime import datetime
 from json import dumps
 from functools import wraps
-from itertools import chain
 
 from lxml import etree
 
