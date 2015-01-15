@@ -4,6 +4,8 @@ Helper functions used in views.
 """
 
 import csv
+from hashlib import md5
+import pickle
 from threading import Lock
 import urllib
 
@@ -52,13 +54,15 @@ def cached(exp_time):
         @wraps(function)
         def inner(*args, **kwargs):
             with cache_lock:
+                key = md5(repr(function)+repr(args)+repr(kwargs))
                 age = datetime.now() - timedelta(seconds=exp_time)
-                if CACHE and CACHE['timestamp'] >= age:
-                    CACHE['timestamp'] = datetime.now()
+                if CACHE.get(key) is None or CACHE[key]['timestamp'] <= age:
+                    CACHE[key] = {'timestamp': datetime.now(),
+                                  'data': function(*args, **kwargs)}
+                    return CACHE[key]['data']
                 else:
-                    CACHE['timestamp'] = datetime.now()
-                    CACHE[args] = function(*args, **kwargs)
-                return CACHE[args]
+                    return CACHE[key]['data']
+
         return inner
     return inner
 
