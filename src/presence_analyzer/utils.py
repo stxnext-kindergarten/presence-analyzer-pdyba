@@ -59,10 +59,7 @@ def cached(exp_time):
                 if CACHE.get(key) is None or CACHE[key]['timestamp'] <= age:
                     CACHE[key] = {'timestamp': datetime.now(),
                                   'data': function(*args, **kwargs)}
-                    return CACHE[key]['data']
-                else:
-                    return CACHE[key]['data']
-
+                return CACHE[key]['data']
         return inner
     return inner
 
