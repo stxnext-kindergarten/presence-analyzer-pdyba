@@ -2,16 +2,21 @@
 """
 Helper functions used in views.
 """
-import urllib
-import csv
 
-from datetime import datetime
+import csv
+from hashlib import md5
+import pickle
+from threading import Lock
+import urllib
+
+
+from datetime import datetime, timedelta
 from json import dumps
 from functools import wraps
 
-from lxml import etree
-
 from flask import Response
+
+from lxml import etree
 
 from presence_analyzer.main import app
 
@@ -19,6 +24,8 @@ import logging
 
 log = logging.getLogger(__name__)
 # pylint: disable=invalid-name, missing-docstring
+
+CACHE = {}
 
 
 def jsonify(function):
@@ -39,6 +46,25 @@ def jsonify(function):
     return inner
 
 
+def cached(exp_time):
+
+    cache_lock = Lock()
+
+    def inner(function):
+        @wraps(function)
+        def inner(*args, **kwargs):
+            with cache_lock:
+                key = md5(repr(function)+repr(args)+repr(kwargs))
+                age = datetime.now() - timedelta(seconds=exp_time)
+                if CACHE.get(key) is None or CACHE[key]['timestamp'] <= age:
+                    CACHE[key] = {'timestamp': datetime.now(),
+                                  'data': function(*args, **kwargs)}
+                return CACHE[key]['data']
+        return inner
+    return inner
+
+
+@cached(600)
 def get_data():
     """
     Extracts presence data from CSV file and groups it by user_id.
@@ -165,10 +191,11 @@ def user(uid, data=False, name=True, image_url=True):
     except KeyError:
         if name and image_url:
             return {'name': "Anonymous user",
-                'image_url': 'http://www.designofsignage.com/application/'
-                             'symbol/building/image/600x600/no-photo.jpg'}
+                    'image_url': 'http://www.designofsignage.com/application/'
+                                 'symbol/building/image/600x600/no-photo.jpg'}
         elif not name and image_url:
             return {'image_url': 'http://www.designofsignage.com/'
-                                 'application/symbol/building/image/600x600/no-photo.jpg'}
+                                 'application/symbol/building/'
+                                 'image/600x600/no-photo.jpg'}
         else:
             return "Anonymous user"

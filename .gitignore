@@ -8,3 +8,7 @@ eggs/
 parts/
 src/*.egg-info/
 var/
+.DS_Store
+.idea/
+presence_start_end_clean.html
+upload.sh
